@@ -303,36 +303,78 @@
 <span id="301">301</span>
 <span id="302">302</span>
 <span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-serde&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{
+    <span class="ident">fmt</span>,
+    <span class="ident">mem</span>::{<span class="self">self</span>, <span class="ident">MaybeUninit</span>},
+};
+<span class="kw">use</span> <span class="ident">wasmer_derive::ValueType</span>;
 <span class="kw">use</span> <span class="ident">wasmer_types::ValueType</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_device_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_fd_t</span> <span class="op">=</span> <span class="ident">u32</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDIN_FILENO</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDOUT_FILENO</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDERR_FILENO</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDIN_FILENO</span>: <span class="ident">__wasi_fd_t</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDOUT_FILENO</span>: <span class="ident">__wasi_fd_t</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_STDERR_FILENO</span>: <span class="ident">__wasi_fd_t</span> <span class="op">=</span> <span class="number">2</span>;
+
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_pid_t</span> <span class="op">=</span> <span class="ident">u32</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_tid_t</span> <span class="op">=</span> <span class="ident">u32</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_APPEND</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_DSYNC</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_NONBLOCK</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_RSYNC</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_SYNC</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_APPEND</span>: <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_DSYNC</span>: <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_NONBLOCK</span>: <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_RSYNC</span>: <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FDFLAG_SYNC</span>: <span class="ident">__wasi_fdflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
+
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_eventfdflags</span> <span class="op">=</span> <span class="ident">u16</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_EVENTFDFLAGS_SEMAPHORE</span>: <span class="ident">__wasi_eventfdflags</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_preopentype_t</span> <span class="op">=</span> <span class="ident">u8</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_PREOPENTYPE_DIR</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_PREOPENTYPE_DIR</span>: <span class="ident">__wasi_preopentype_t</span> <span class="op">=</span> <span class="number">0</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">ValueType</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">__wasi_prestat_u_dir_t</span> {
     <span class="kw">pub</span> <span class="ident">pr_name_len</span>: <span class="ident">u32</span>,
 }
-
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_prestat_u_dir_t</span> {}
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
@@ -345,8 +387,6 @@
         <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;__wasi_prestat_u&quot;</span>)
     }
 }
-
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_prestat_u</span> {}
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
@@ -382,9 +422,42 @@
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_prestat_t</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_prestat_t</span> {
+    <span class="kw">fn</span> <span class="ident">zero_padding_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>]) {
+        <span class="macro">macro_rules!</span> <span class="ident">field</span> {
+            ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>)<span class="op">*</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="self">self</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span> <span class="kw">as</span> <span class="ident">usize</span>
+            };
+        }
+        <span class="macro">macro_rules!</span> <span class="ident">field_end</span> {
+            ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
+                <span class="macro">field!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>)<span class="kw-2">*</span>) <span class="op">+</span> <span class="ident">mem::size_of_val</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>)<span class="kw-2">*</span>)
+            };
+        }
+        <span class="macro">macro_rules!</span> <span class="ident">zero</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">start</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">end</span>:<span class="ident">expr</span>) =&gt; {
+                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">start</span>..<span class="macro-nonterminal">$</span><span class="macro-nonterminal">end</span> {
+                    <span class="ident">bytes</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">MaybeUninit::new</span>(<span class="number">0</span>);
+                }
+            };
+        }
+        <span class="self">self</span>.<span class="ident">pr_type</span>
+            .<span class="ident">zero_padding_bytes</span>(<span class="kw-2">&amp;mut</span> <span class="ident">bytes</span>[<span class="macro">field!</span>(<span class="ident">pr_type</span>)..<span class="macro">field_end!</span>(<span class="ident">pr_type</span>)]);
+        <span class="macro">zero!</span>(<span class="macro">field_end!</span>(<span class="ident">pr_type</span>), <span class="macro">field!</span>(<span class="ident">u</span>));
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">pr_type</span> {
+            <span class="ident">__WASI_PREOPENTYPE_DIR</span> =&gt; <span class="kw">unsafe</span> {
+                <span class="self">self</span>.<span class="ident">u</span>
+                    .<span class="ident">dir</span>
+                    .<span class="ident">zero_padding_bytes</span>(<span class="kw-2">&amp;mut</span> <span class="ident">bytes</span>[<span class="macro">field!</span>(<span class="ident">u</span>.<span class="ident">dir</span>)..<span class="macro">field_end!</span>(<span class="ident">u</span>.<span class="ident">dir</span>)]);
+                <span class="macro">zero!</span>(<span class="macro">field_end!</span>(<span class="ident">u</span>.<span class="ident">dir</span>), <span class="macro">field_end!</span>(<span class="ident">u</span>));
+            },
+            <span class="kw">_</span> =&gt; <span class="macro">zero!</span>(<span class="macro">field!</span>(<span class="ident">u</span>), <span class="macro">field_end!</span>(<span class="ident">u</span>)),
+        }
+        <span class="macro">zero!</span>(<span class="macro">field_end!</span>(<span class="ident">u</span>), <span class="ident">mem::size_of_val</span>(<span class="self">self</span>));
+    }
+}
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">ValueType</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">__wasi_fdstat_t</span> {
     <span class="kw">pub</span> <span class="ident">fs_filetype</span>: <span class="ident">__wasi_filetype_t</span>,
@@ -393,13 +466,11 @@
     <span class="kw">pub</span> <span class="ident">fs_rights_inheriting</span>: <span class="ident">__wasi_rights_t</span>,
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_fdstat_t</span> {}
-
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_filedelta_t</span> <span class="op">=</span> <span class="ident">i64</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_filesize_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">ValueType</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;enable-serde&quot;</span>, <span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>))]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">__wasi_filestat_t</span> {
@@ -463,8 +534,6 @@
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">ValueType</span> <span class="kw">for</span> <span class="ident">__wasi_filestat_t</span> {}
-
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wasi_filetype_to_name</span>(<span class="ident">ft</span>: <span class="ident">__wasi_filetype_t</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
     <span class="kw">match</span> <span class="ident">ft</span> {
         <span class="ident">__WASI_FILETYPE_UNKNOWN</span> =&gt; <span class="string">&quot;Unknown&quot;</span>,
@@ -480,64 +549,76 @@
 }
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="ident">u8</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_UNKNOWN</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_BLOCK_DEVICE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_CHARACTER_DEVICE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">2</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_DIRECTORY</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">3</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_REGULAR_FILE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">4</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_DGRAM</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">5</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_STREAM</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">6</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SYMBOLIC_LINK</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_UNKNOWN</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_BLOCK_DEVICE</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_CHARACTER_DEVICE</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_DIRECTORY</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_REGULAR_FILE</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_DGRAM</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_STREAM</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SYMBOLIC_LINK</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_RAW</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILETYPE_SOCKET_SEQPACKET</span>: <span class="ident">__wasi_filetype_t</span> <span class="op">=</span> <span class="number">9</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_fstflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_ATIM</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_ATIM_NOW</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_MTIM</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_MTIM_NOW</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_ATIM</span>: <span class="ident">__wasi_fstflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_ATIM_NOW</span>: <span class="ident">__wasi_fstflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_MTIM</span>: <span class="ident">__wasi_fstflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_FILESTAT_SET_MTIM_NOW</span>: <span class="ident">__wasi_fstflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_inode_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_linkcount_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_lookupflags_t</span> <span class="op">=</span> <span class="ident">u32</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_LOOKUP_SYMLINK_FOLLOW</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_LOOKUP_SYMLINK_FOLLOW</span>: <span class="ident">__wasi_lookupflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_oflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_CREAT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_DIRECTORY</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_EXCL</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_TRUNC</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_CREAT</span>: <span class="ident">__wasi_oflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_DIRECTORY</span>: <span class="ident">__wasi_oflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_EXCL</span>: <span class="ident">__wasi_oflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_O_TRUNC</span>: <span class="ident">__wasi_oflags_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="ident">u64</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_DATASYNC</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_READ</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_SEEK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FDSTAT_SET_FLAGS</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_SYNC</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_TELL</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_WRITE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_ADVISE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_ALLOCATE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_CREATE_DIRECTORY</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_CREATE_FILE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_LINK_SOURCE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_LINK_TARGET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_OPEN</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_READDIR</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">14</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_READLINK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">15</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_RENAME_SOURCE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_RENAME_TARGET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_GET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">18</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_SET_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">19</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_SET_TIMES</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">20</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_GET</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">21</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_SET_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_SET_TIMES</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">23</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_SYMLINK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">24</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_REMOVE_DIRECTORY</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">25</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_UNLINK_FILE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">26</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_POLL_FD_READWRITE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">27</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_SHUTDOWN</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">28</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_DATASYNC</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_READ</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_SEEK</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FDSTAT_SET_FLAGS</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_SYNC</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_TELL</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_WRITE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_ADVISE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_ALLOCATE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_CREATE_DIRECTORY</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_CREATE_FILE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_LINK_SOURCE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_LINK_TARGET</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_OPEN</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_READDIR</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">14</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_READLINK</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">15</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_RENAME_SOURCE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_RENAME_TARGET</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_GET</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">18</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_SET_SIZE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">19</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_FILESTAT_SET_TIMES</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">20</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_GET</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">21</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_SET_SIZE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_FD_FILESTAT_SET_TIMES</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">23</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_SYMLINK</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">24</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_REMOVE_DIRECTORY</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">25</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_PATH_UNLINK_FILE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">26</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_POLL_FD_READWRITE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">27</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_SHUTDOWN</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">28</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_ACCEPT</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">29</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_CONNECT</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">30</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_LISTEN</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_BIND</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_RECV</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">33</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_SEND</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">34</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_ADDR_LOCAL</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">35</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_ADDR_REMOTE</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">36</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_RECV_FROM</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">37</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_RIGHT_SOCK_SEND_TO</span>: <span class="ident">__wasi_rights_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">38</span>;
 
 <span class="doccomment">/// function for debugging rights issues</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
@@ -589,23 +670,10 @@
     })
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_riflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_SOCK_RECV_PEEK</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_SOCK_RECV_WAITALL</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_roflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_SOCK_RECV_DATA_TRUNCATED</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_whence_t</span> <span class="op">=</span> <span class="ident">u8</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_SET</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_CUR</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_END</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">2</span>;
-
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_sdflags_t</span> <span class="op">=</span> <span class="ident">u8</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_SHUT_RD</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_SHUT_WR</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
-
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__wasi_siflags_t</span> <span class="op">=</span> <span class="ident">u16</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_SET</span>: <span class="ident">__wasi_whence_t</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_CUR</span>: <span class="ident">__wasi_whence_t</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">__WASI_WHENCE_END</span>: <span class="ident">__wasi_whence_t</span> <span class="op">=</span> <span class="number">2</span>;
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="wasmer_wasi_types" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0 (9d1b2106e 2022-02-23)" ></div>
 </body></html>
